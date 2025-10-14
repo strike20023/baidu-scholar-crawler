@@ -20,7 +20,11 @@ except Exception as e:
 
 
 options = ChromeOptions()
+<<<<<<< HEAD
 driver = webdriver.Remote(options=options, command_executor="http://localhost:4444")
+=======
+driver = webdriver.Remote(options=options, command_executor="https://jeff-haemal-uncompromisingly.ngrok-free.dev")
+>>>>>>> ebd64c3 (添加爬取数据的输出文件，包含数学教育相关文献的标题和摘要)
 driver.implicitly_wait(5)
 BASEURL = 'https://xueshu.baidu.com/ndscholar/browse/search?wd={}'
 

@@ -12,7 +12,7 @@ QUERIES = [
 ]
 
 # SSE 服务器 URL（匹配你的 mcp.run(port=8898)）
-SSE_URL = "https://jeff-haemal-uncompromisingly.ngrok-free.dev/sse"
+SSE_URL = "/sse"
 
 async def test_batch_crawler():
     print(f"连接到 SSE 服务器: {SSE_URL}")
