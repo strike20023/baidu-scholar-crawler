@@ -1,6 +1,7 @@
 name: crawling_web
 on:
-  workflow_dispatch:
+  repository_dispatch:
+    types: [crawling_web]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,9 +13,8 @@ jobs:
           - 4444:4444
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'pip'
@@ -29,4 +29,14 @@ jobs:
           timeout 60 bash -c 'until curl -s http://localhost:4444/wd/hub/status > /dev/null; do sleep 2; done'
       
       - name: Run main.py
+        env:
+          QUERY: ${{ github.event.client_payload.query }}
         run: python main.py
+      
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawled-data-${{ github.event.client_payload.query }}
+          path: |
+            crawled-data-*.json
+          retention-days: 30
