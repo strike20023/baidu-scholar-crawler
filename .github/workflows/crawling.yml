@@ -2,6 +2,8 @@ name: crawling_web
 on:
   repository_dispatch:
     types: [crawling_web]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,3 +42,11 @@ jobs:
           path: |
             crawled-data-*.json
           retention-days: 30
+
+      - name: Commit and push outputs
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add outputs/
+          git commit -m "Add crawled data for query: ${{ github.event.client_payload.query }}" || echo "No changes to commit"
+          git push
