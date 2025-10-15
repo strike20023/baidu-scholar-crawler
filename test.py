@@ -1,4 +1,4 @@
-
+# %%
 import os
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium import webdriver
@@ -7,28 +7,33 @@ import time
 import json
 import base64
 from tqdm import tqdm
-
-try:
-    _query = os.environ['QUERY']
-except KeyError:
-    raise ValueError("环境变量 'QUERY' 未设置，请先配置该变量") from None
-
-try:
-    query = base64.b64decode(_query).decode('utf-8')
-except Exception as e:
-    raise ValueError("环境变量 'QUERY' 不是有效的 Base64 编码，请检查该变量") from e
+# %%
 
 
 options = ChromeOptions()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
 driver = webdriver.Remote(options=options, command_executor="http://localhost:4444")
 driver.implicitly_wait(5)
-BASEURL = 'https://xueshu.baidu.com/ndscholar/browse/search?wd={}'
-
-try:
-    driver.get(BASEURL.format(query.replace(' ', '+')))
-    data = []
+BASEURL = 'https://xueshu.baidu.com/ndscholar/browse/search?wd={}&pn={}'
+# %%
+query = '人工智能 虚拟现实'
+data = []
+driver.get(BASEURL.format(query.replace(' ', '+'), 0))
+driver.find_element(By.CLASS_NAME, 'paper-wrap')
+len_data = driver.find_element(By.CLASS_NAME, 'search-nums').find_element(By.TAG_NAME, 'span').text
+len_data = int(len_data)
+# %%
+pn=0
+max_pn=30
+while len_data>pn:
+    if pn>max_pn:
+        break
+    print(f"正在爬取第 {pn//10+1} 页")
+    driver.get(BASEURL.format(query.replace(' ', '+'), pn))
     driver.find_element(By.CLASS_NAME, 'paper-wrap')
-
+    
     for e in tqdm(driver.find_elements(By.CLASS_NAME, 'paper-wrap')):
         title = e.find_element(By.CLASS_NAME, 'paper-title').text
         abstract = e.find_element(By.CLASS_NAME, 'paper-abstract').text
@@ -40,9 +45,6 @@ try:
             'abstract': abstract,
             'APA': APA
         })
-
-    with open(f"outputs/crawled-data-{_query}.json", "w", encoding="utf-8") as f:
-        f.write(json.dumps(data, ensure_ascii=False))
-except Exception as e:
-    print(e)    
-driver.quit()
+    pn+=10
+# %%
+print(data)
